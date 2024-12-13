@@ -6,7 +6,7 @@ Assignment:
 #include <stdio.h>
 #include <string.h>
 
-void task1_robot_paths();
+int task1_robot_paths(int x, int y);
 void task2_human_pyramid();
 void task3_parenthesis_validator();
 void task4_queens_battle();
@@ -33,7 +33,9 @@ int main()
                 printf("Goodbye!\n");
                 break;
             case 1:
-                task1_robot_paths();
+                int x = 0;
+                x = task1_robot_paths(2,2);
+                printf("%d", x);
                 break;
             case 2:
                 task2_human_pyramid();
@@ -60,9 +62,16 @@ int main()
     } while (task != 6);
 }
 
-void task1_robot_paths()
+int task1_robot_paths(int x, int y)
 {
-    // Todo
+    int n = 0, m = 0 ;
+    if (x == 0 && y == 0)
+        return 1;
+    if (x > 0)
+       n =task1_robot_paths(x - 1, y);
+    if (y > 0)
+       m =task1_robot_paths(x, y - 1);
+    return n + m ;
 }
 
 void task2_human_pyramid()
