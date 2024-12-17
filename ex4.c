@@ -5,11 +5,15 @@ Assignment:
 *******************/
 
 #include <stdio.h>
+#include <string.h>
 #define MIN_NUMBER 0
+#define MAX_SIZE 20
 int task1_robot_paths(int x, int y);
 float task2_human_pyramid(float arr[5][5], int row , int col);
 int task3_parenthesis_validator(char expected);
-void task4_queens_battle();
+void copyArray(int size, char src[size][size], char copy[size][size] ,int row , int col);
+int task4_queens_battle ( int size ,char board[size][size] , int row , int col ,\
+      int Queens[size][size] , char areas[size][size] , int region_used[256] );
 void task5_crossword_generator();
 
 int main()
@@ -77,9 +81,36 @@ int main()
                     printf("The parentheses are not balanced correctly.\n");
                 }
                 break;
-            case 4:
-                task4_queens_battle();
+            case 4: {
+                printf("Please enter the board dimensions :\n");
+                int size;
+                if(scanf("%d", &size) > MAX_SIZE)
+                    break;
+                char board[size][size];
+                int Queenss_places[size][size];
+                printf("Please enter the %d*%d puzzle board\n", size ,size);
+                for (int i = 0; i < size; i++) {
+                    for (int j = 0; j < size; j++) {
+                        scanf(" %c", &board[i][j]);
+                    }
+                    printf("\n");
+                }
+                char areas_flags[size][size];
+                int region_used[256] = {0};
+                copyArray(size, board , areas_flags, MIN_NUMBER, MIN_NUMBER);
+                task4_queens_battle(size, board,MIN_NUMBER,MIN_NUMBER,\
+                    Queenss_places,areas_flags,region_used);
+                for (int i = 0; i < size; i++) {
+                    for (int j = 0; j < size; j++) {
+                        if (Queenss_places[i][j] == 1) {
+                            printf(" %c" , 'X');
+                        }else
+                            printf(" %c" , '*');
+                    }
+                    printf("\n");
+                }
                 break;
+            }
             case 5:
                 task5_crossword_generator();
                 break;
@@ -150,10 +181,49 @@ int task3_parenthesis_validator(char expected)
     // Continue reading the next character
     return task3_parenthesis_validator(expected);
 }
+void copyArray(int size, char src[size][size], char copy[size][size] ,int row , int col) {
+    if(row < size) {
+        if(col < size) {
+            copy[row][col] = src[row][col];
+            copyArray(size, src, copy, row, col + 1);
+        }else {
+            copyArray(size, src, copy, row + 1, col);
+        }
+    }
+}
 
-void task4_queens_battle()
-{
+int isSafe(int size , int row , int col ,\
+      int Queens[size][size] , char areas[size][size],int region_used[256]) {
+    if( row <= size || col <= size)
+        return 1 ;
+    if(region_used[areas[row][col]] || Queens[row][col] )
+        return 0;
+    return isSafe(size, row + 1 , col , Queens , areas , region_used)&&
+            isSafe(size,row, col +1 , Queens , areas , region_used);
+            //isSafe(size, row - 1 , col , Queens , areas , region_used);
+}
 
+int isSafeDiagnol(int size ,char board[size][size] , int row , int col ,\
+      int Queens[size][size] , char areas[size][size] , int region_used[256]) {
+    if(row <= size || col <= size)
+        return 1 ;
+    if(region_used[areas[row][col]] || Queens[row][col] )
+        return 0;
+}
+
+int task4_queens_battle ( int size ,char board[size][size] , int row , int col ,\
+      int Queens[size][size] , char areas[size][size] , int region_used[256] ) {
+    if( col <= size && row <= size )
+        return 1 ;
+    if(isSafe(size, row , col , Queens , areas , region_used)&&
+        isSafeDiagnol(size, board , row + 1 , col + 1 , Queens , areas , region_used)&&
+        isSafeDiagnol(size, board , row - 1 , col + 1 , Queens , areas , region_used)&&
+        isSafeDiagnol(size, board , row - 1 , col - 1 , Queens , areas , region_used)&&
+        isSafeDiagnol(size, board , row + 1 , col - 1 , Queens , areas , region_used)) {
+        Queens[row][col]++;
+        region_used[areas[row][col]]++;
+    }
+    return task4_queens_battle(size, board , MIN_NUMBER , col + 1 , Queens , areas , region_used);
 }
 
 void task5_crossword_generator()
