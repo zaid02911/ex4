@@ -190,36 +190,52 @@ int task3_parenthesis_validator(char expected)
 
 
 int isRowSafe(int size,int row ,int col,int Queens[size][size]) {
-    if(col == size)
+    if(col == size){
+        printf("R.");
         return 1 ;
-    if(Queens[row][col] == 1)
+        
+    }
+    if(Queens[row][col] == 1){
+        printf("P.");
         return 0;
+        
+    }
     return isRowSafe(size,row,col + 1,Queens);
 }
 
 int isColSafe(int size,int row ,int col,int Queens[size][size]) {
     if(row == size) {
+        printf("O.");
         return 1;
     }
-    if(Queens[row][col] == 1)
+    if(Queens[row][col] == 1){
+        printf("I.");
         return 0;
+    }
     return isColSafe(size,row + 1,col,Queens);
 }
 
 int isSafeSquare(int size,int row ,int col,int Queens[size][size], char board[size][size],int region[255],int flag) {
     if(row >= size || col >= size || row < 0 || col < 0) {
         flag = 1 ;
+        printf("s.");
         return flag;
+        
     }
-    if(Queens[row][col] == 1 ) {
+    else if(Queens[row][col] == 1 ) {
         flag = 0;
+        printf("q.");
+
         return flag;
     }
     if(!flag){
         flag = 1;
+        printf("a.");
         return flag;
+        
     }
-    return isSafeSquare(size, row + 1 ,col + 1 ,Queens,board,region,MIN_NUMBER)&&
+   
+    return isSafeSquare(size, row + 1 ,col + 1 ,Queens,board,region, MIN_NUMBER)&&
             isSafeSquare(size, row + 1 ,col - 1 ,Queens,board,region,MIN_NUMBER)&&
             isSafeSquare(size, row - 1 ,col + 1 ,Queens,board,region,MIN_NUMBER)&&
             isSafeSquare(size, row - 1 ,col - 1 ,Queens,board,region,MIN_NUMBER);
@@ -233,8 +249,8 @@ int task4_queens_battle(int size,int row ,int col,int Queens[size][size], char b
         return 0;
     }
     if(isSafeSquare(size , row , col , Queens,board,region ,1) &&
-        isRowSafe(size,row,col = 0,Queens) &&
-        isColSafe(size,row= 0,col,Queens) &&
+        isRowSafe(size,row,0,Queens) &&
+        isColSafe(size,0,col,Queens) &&
         region[(unsigned char)board[row][col]] == 0 ) {
         Queens[row][col] = 1;
         region[(unsigned char)board[row][col]] = 1;
