@@ -11,9 +11,15 @@ Assignment:EX4
 int task1_robot_paths(int x, int y);
 float task2_human_pyramid(float arr[5][5], int row , int col);
 int task3_parenthesis_validator(char expected);
-void copyArray(int size, char src[size][size], char copy[size][size] ,int row , int col);
-int task4_queens_battle(int size,int row ,int col,int Queens[size][size], char areas_place[size][size],int region[256]);
+int task4_queens_battle(int size,int row ,int col,int Queens[size][size], char board[size][size],int region[255]);
 void task5_crossword_generator();
+void initializeRegion(int region[255], int index) {
+    if (index < 255) {
+        region[index] = 0;
+        initializeRegion(region, index + 1);
+    }
+}
+
 
 int main()
 {
@@ -86,22 +92,21 @@ int main()
                 if(scanf("%d", &size) > MAX_SIZE)
                     break;
                 char board[size][size];
-                int Queenss_places[size][size];
+                int Queenss[size][size];
                 printf("Please enter the %d*%d puzzle board\n", size ,size);
                 for (int i = 0; i < size; i++) {
                     for (int j = 0; j < size; j++) {
                         scanf(" %c", &board[i][j]);
-                        Queenss_places[i][j] = 0;
+                        Queenss[i][j] = 0;
                     }
                     printf("\n");
                 }
-                char areas_flags[size][size];
-                int region_used[256] ;
-                copyArray(size, board , areas_flags, MIN_NUMBER, MIN_NUMBER);
-                if(task4_queens_battle(size , MIN_NUMBER,MIN_NUMBER,Queenss_places, areas_flags, region_used)) {
+                int region_used[255];
+                initializeRegion(region_used,0);
+                if(task4_queens_battle(size , MIN_NUMBER,MIN_NUMBER,Queenss, board , region_used)) {
                     for (int i = 0; i < size; i++) {
                         for (int j = 0; j < size; j++) {
-                            if (Queenss_places[i][j] == 1) {
+                            if (Queenss[i][j] == 1) {
                                 printf(" X");
                             }else
                                 printf(" *");
@@ -182,38 +187,31 @@ int task3_parenthesis_validator(char expected)
     // Continue reading the next character
     return task3_parenthesis_validator(expected);
 }
-void copyArray(int size, char src[size][size], char copy[size][size] ,int row , int col) {
-    if(row < size) {
-        if(col < size) {
-            copy[row][col] = src[row][col];
-            copyArray(size, src, copy, row, col + 1);
-        }else {
-            copyArray(size, src, copy, row + 1, 0);
-        }
+
+
+int isRowSafe(int size,int row ,int col,int Queens[size][size]) {
+    if(col == size)
+        return 1 ;
+    if(Queens[row][col] == 1)
+        return 0;
+    return isRowSafe(size,row,col + 1,Queens);
+}
+
+int isColSafe(int size,int row ,int col,int Queens[size][size]) {
+    if(row == size) {
+        return 1;
     }
-}
-
-int isRowSafe(int size,int row ,int col,int Queens[size][size], char areas_place[size][size],int region[256],int flag) {
-    if(col >= size)
-        return flag;
-    if(Queens[row][col] || region[areas_place[row][col]] )
+    if(Queens[row][col] == 1)
         return 0;
-    return isRowSafe(size,row,col + 1,Queens,areas_place,region,flag);
+    return isColSafe(size,row + 1,col,Queens);
 }
 
-int isColSafe(int size,int row ,int col,int Queens[size][size], char areas_place[size][size],int region[256],int flag) {
-    if(row >= size)
+int isSafeSquare(int size,int row ,int col,int Queens[size][size], char board[size][size],int region[255],int flag) {
+    if(row >= size || col >= size || row < 0 || col < 0) {
+        flag = 1 ;
         return flag;
-    if(Queens[row][col] || region[areas_place[row][col]] )
-        return 0;
-    return isRowSafe(size,row + 1,col,Queens,areas_place,region,flag);
-}
-
-int isSafeSquare(int size,int row ,int col,int Queens[size][size], char areas_place[size][size],int region[256],int flag) {
-    if(row >= size || col >= size || row < 0 || col < 0)
-        return flag;
-
-    if(Queens[row][col] || region[areas_place[row][col]] ) {
+    }
+    if(Queens[row][col] == 1 ) {
         flag = 0;
         return flag;
     }
@@ -221,31 +219,32 @@ int isSafeSquare(int size,int row ,int col,int Queens[size][size], char areas_pl
         flag = 1;
         return flag;
     }
-    return isSafeSquare(size , row + 1 ,col + 1 ,Queens,areas_place,region,flag)&&
-            isSafeSquare(size, row + 1 ,col - 1 ,Queens,areas_place,region,flag)&&
-            isSafeSquare(size, row - 1 ,col + 1 ,Queens,areas_place,region,flag)&&
-            isSafeSquare(size, row - 1 ,col - 1 ,Queens,areas_place,region,flag);
+    return isSafeSquare(size, row + 1 ,col + 1 ,Queens,board,region,MIN_NUMBER)&&
+            isSafeSquare(size, row + 1 ,col - 1 ,Queens,board,region,MIN_NUMBER)&&
+            isSafeSquare(size, row - 1 ,col + 1 ,Queens,board,region,MIN_NUMBER)&&
+            isSafeSquare(size, row - 1 ,col - 1 ,Queens,board,region,MIN_NUMBER);
 }
 
-int task4_queens_battle(int size,int row ,int col,int Queens[size][size], char areas_place[size][size],int region[256]) {
+int task4_queens_battle(int size,int row ,int col,int Queens[size][size], char board[size][size],int region[255]) {
     if(col == size) {
         return 1;
     }
     if(row == size) {
-        return task4_queens_battle(size ,row + 1 ,col - 1 ,Queens,areas_place,region);
+        return 0;
     }
-    if(isSafeSquare(size , row , col , Queens,areas_place,region ,1) &&
-        isRowSafe(size,row,col,Queens,areas_place,region,1) &&
-        isColSafe(size,row,col,Queens,areas_place,region,1) ) {
+    if(isSafeSquare(size , row , col , Queens,board,region ,1) &&
+        isRowSafe(size,row,col = 0,Queens) &&
+        isColSafe(size,row= 0,col,Queens) &&
+        region[(unsigned char)board[row][col]] == 0 ) {
         Queens[row][col] = 1;
-        region[areas_place[row][col]] = 1;
-        if (task4_queens_battle(size, row = 0,col + 1,Queens,areas_place,region)) {
+        region[(unsigned char)board[row][col]] = 1;
+        if (task4_queens_battle(size, 0,col + 1,Queens,board,region)) {
             return 1 ;
         }
         Queens[row][col] = 0;
-        region[areas_place[row][col]] = 0;
+        region[(unsigned char)board[row][col]] = 0;
     }
-    return task4_queens_battle(size ,row +1 , col , Queens ,areas_place , region);
+    return task4_queens_battle(size ,row +1 , col , Queens ,board , region);
 }
 
 void task5_crossword_generator()
